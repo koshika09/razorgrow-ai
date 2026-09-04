@@ -7,7 +7,7 @@ from backend.routes.agent import router as agent_router
 from backend.services.audit_service import initialize_database
 
 
-app = FastAPI(title="RazorGrow AI")
+app = FastAPI(title="RazorGrow AI", version="1.0.0")
 
 initialize_database()
 

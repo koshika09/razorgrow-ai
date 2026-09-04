@@ -56,7 +56,8 @@ def get_actions():
 
     connection.close()
 
-    return [
+    actions = [
         json.loads(row["action_data"])
         for row in rows
     ]
+    return sorted(actions, key=lambda action: action.get("created_at", ""), reverse=True)

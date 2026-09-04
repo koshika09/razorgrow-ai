@@ -1,83 +1,69 @@
+"""Merchant analytics built from the local transaction dataset."""
+
+from collections import Counter
+from pathlib import Path
+
 import pandas as pd
 
-DATA_PATH = "backend/data/transactions.csv"
+DATA_PATH = Path(__file__).resolve().parents[1] / "data" / "transactions.csv"
+REQUIRED_COLUMNS = {"transaction_id", "product", "category", "quantity", "price", "payment_method"}
 
-# Load transaction data
-df = pd.read_csv(DATA_PATH)
 
-print("\n===== RAZORGROW AI ANALYTICS =====")
+class AnalyticsError(ValueError):
+    pass
 
-# 1. Total revenue
-total_revenue = (df["price"] * df["quantity"]).sum()
 
-# 2. Total transactions
-total_transactions = len(df)
+def _money(value):
+    return round(float(value), 2)
 
-# 3. Total items sold
-total_items = df["quantity"].sum()
 
-# 4. Average transaction value
-average_transaction = total_revenue / total_transactions
+def load_transactions():
+    if not DATA_PATH.exists():
+        raise AnalyticsError("Merchant transaction data is unavailable.")
+    try:
+        frame = pd.read_csv(DATA_PATH)
+    except Exception as exc:
+        raise AnalyticsError("Merchant transaction data could not be read.") from exc
+    if REQUIRED_COLUMNS - set(frame.columns):
+        raise AnalyticsError("Merchant data is missing required fields.")
+    frame["quantity"] = pd.to_numeric(frame["quantity"], errors="coerce")
+    frame["price"] = pd.to_numeric(frame["price"], errors="coerce")
+    frame = frame.dropna(subset=["transaction_id", "product", "category", "quantity", "price"])
+    frame = frame[(frame["quantity"] > 0) & (frame["price"] >= 0)].copy()
+    if frame.empty:
+        raise AnalyticsError("No valid merchant transactions are available for analysis.")
+    frame["revenue"] = frame["quantity"] * frame["price"]
+    return frame
 
-# Display results
-print(f"\nTotal Revenue: ₹{total_revenue}")
-print(f"Total Transactions: {total_transactions}")
-print(f"Total Items Sold: {total_items}")
-print(f"Average Transaction Value: ₹{average_transaction:.2f}")
 
-# 5. Revenue by category
-category_revenue = (
-    df.groupby("category")
-    .apply(lambda x: (x["price"] * x["quantity"]).sum())
-)
+def get_merchant_analytics():
+    frame = load_transactions()
+    product_revenue = frame.groupby("product")["revenue"].sum().sort_values(ascending=False)
+    category_revenue = frame.groupby("category")["revenue"].sum().sort_values(ascending=False)
+    product_units = frame.groupby("product")["quantity"].sum().sort_values(ascending=False)
+    payment_methods = frame.groupby("payment_method").size().sort_values(ascending=False)
+    total_revenue = _money(frame["revenue"].sum())
+    total_transactions = int(frame["transaction_id"].nunique())
+    product_categories = frame.groupby("product")["category"].agg(lambda values: values.mode().iat[0]).to_dict()
+    return {
+        "total_transactions": total_transactions, "total_items_sold": int(frame["quantity"].sum()),
+        "average_transaction_value": _money(total_revenue / total_transactions), "total_revenue": total_revenue,
+        "best_category": category_revenue.index[0], "best_product": product_revenue.index[0],
+        "category_revenue": {key: _money(value) for key, value in category_revenue.items()},
+        "product_revenue": {key: _money(value) for key, value in product_revenue.items()},
+        "product_units": {key: int(value) for key, value in product_units.items()},
+        "payment_method_distribution": {key: int(value) for key, value in payment_methods.items()},
+        "product_categories": product_categories,
+        "data_quality": {"valid_rows": int(len(frame)), "has_transaction_baskets": bool((frame.groupby("transaction_id")["product"].nunique() > 1).any())},
+    }
 
-print("\n===== REVENUE BY CATEGORY =====")
-print(category_revenue)
 
-# 6. Best-selling category
-best_category = category_revenue.idxmax()
-
-print(f"\nBest Performing Category: {best_category}")
-
-# 7. Revenue by product
-product_revenue = (
-    df.groupby("product")
-    .apply(lambda x: (x["price"] * x["quantity"]).sum())
-    .sort_values(ascending=False)
-)
-
-print("\n===== REVENUE BY PRODUCT =====")
-print(product_revenue)
-
-# 8. Best-selling product by revenue
-best_product = product_revenue.idxmax()
-
-print(f"\nBest Performing Product: {best_product}")
-
-# 9. Generate business insight
-
-if best_category == "Electronics":
-    category_insight = (
-        "Electronics is the strongest category. "
-        "Consider increasing inventory and promotions in this category."
-    )
-else:
-    category_insight = (
-        f"{best_category} is the strongest category. "
-        "Consider increasing inventory and promotions in this category."
-    )
-
-if best_product == "Headphones":
-    product_insight = (
-        "Headphones are the top revenue-generating product. "
-        "Consider promoting headphones and maintaining sufficient stock."
-    )
-else:
-    product_insight = (
-        f"{best_product} is the top revenue-generating product. "
-        "Consider promoting this product and maintaining sufficient stock."
-    )
-
-print("\n===== RAZORGROW AI INSIGHTS =====")
-print(f"Category Insight: {category_insight}")
-print(f"Product Insight: {product_insight}")
+def get_cross_sell_opportunities():
+    baskets = load_transactions().groupby("transaction_id")["product"].apply(lambda values: sorted(set(values)))
+    pairs = Counter()
+    for products in baskets:
+        for index, product in enumerate(products):
+            for partner in products[index + 1:]:
+                pairs[(product, partner)] += 1
+    return [{"product_a": first, "product_b": second, "co_occurrences": count,
+             "reason": f"Purchased together in {count} transaction(s)."} for (first, second), count in pairs.most_common()]
