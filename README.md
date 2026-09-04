@@ -307,7 +307,6 @@ RazorGrow AI demonstrates how AI can help merchants identify growth opportunitie
 - Auditable
 - Testable
 - Secure
-
 The project is designed around the **AI Growth & Agentic Commerce** use case for the Razorpay AI Builder Buildathon.
 
 
