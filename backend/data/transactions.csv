@@ -1,0 +1,21 @@
+transaction_id,date,customer_id,product,category,quantity,price,payment_method
+T001,2026-08-01,C001,Wireless Mouse,Electronics,2,599,UPI
+T002,2026-08-01,C002,Keyboard,Electronics,1,999,Card
+T003,2026-08-02,C003,USB Cable,Accessories,3,299,UPI
+T004,2026-08-02,C004,Headphones,Electronics,1,1499,Card
+T005,2026-08-03,C005,Laptop Stand,Accessories,2,899,UPI
+T006,2026-08-03,C006,Wireless Mouse,Electronics,1,599,Cash
+T007,2026-08-04,C007,Keyboard,Electronics,2,999,UPI
+T008,2026-08-04,C008,USB Cable,Accessories,5,299,UPI
+T009,2026-08-05,C009,Headphones,Electronics,2,1499,Card
+T010,2026-08-05,C010,Laptop Stand,Accessories,1,899,Cash
+T011,2026-08-06,C011,Wireless Mouse,Electronics,3,599,UPI
+T012,2026-08-06,C012,Keyboard,Electronics,1,999,Card
+T013,2026-08-07,C013,USB Cable,Accessories,4,299,UPI
+T014,2026-08-07,C014,Headphones,Electronics,1,1499,UPI
+T015,2026-08-08,C015,Laptop Stand,Accessories,3,899,Card
+T016,2026-08-08,C016,Wireless Mouse,Electronics,2,599,UPI
+T017,2026-08-09,C017,Keyboard,Electronics,2,999,Card
+T018,2026-08-09,C018,USB Cable,Accessories,6,299,UPI
+T019,2026-08-10,C019,Headphones,Electronics,1,1499,Cash
+T020,2026-08-10,C020,Laptop Stand,Accessories,2,899,UPI
