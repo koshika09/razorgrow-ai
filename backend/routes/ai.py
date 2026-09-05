@@ -1,16 +1,24 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
-from backend.ai.advisor import generate_growth_advice
+from backend.ai.advisor import generate_campaign, generate_growth_advice
 from backend.services.analytics import AnalyticsError, get_cross_sell_opportunities, get_merchant_analytics
 
 router = APIRouter(tags=["intelligence"])
 
 class AIQuestion(BaseModel): question: str = Field(min_length=2, max_length=500)
+class CampaignRequest(BaseModel): product: str = Field(min_length=1, max_length=100)
 
 @router.post("/ai/advice")
 def get_ai_advice(request: AIQuestion):
     try: return generate_growth_advice(get_merchant_analytics(), request.question)
     except AnalyticsError as exc: raise HTTPException(503, str(exc)) from exc
+
+@router.post("/ai/campaign")
+def campaign(request: CampaignRequest):
+    try:
+        return generate_campaign(get_merchant_analytics(), request.product)
+    except AnalyticsError as exc: raise HTTPException(503, str(exc)) from exc
+    except ValueError as exc: raise HTTPException(422, str(exc)) from exc
 
 @router.get("/ai/opportunities")
 def opportunities():

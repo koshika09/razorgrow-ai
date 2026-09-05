@@ -8,6 +8,7 @@ router = APIRouter(tags=["agent"])
 class GrowthActionRequest(BaseModel):
     product: str = Field(min_length=1, max_length=100); category: str = Field(min_length=1, max_length=100)
     title: str = Field(min_length=1, max_length=160); recommendation: str = Field(min_length=1, max_length=1000); evidence: str = Field(min_length=1, max_length=1000)
+    campaign: dict | None = None
 class ApprovalRequest(BaseModel): action_id: str = Field(min_length=8, max_length=80)
 class PaymentVerificationRequest(BaseModel):
     razorpay_payment_id: str = Field(min_length=1, max_length=100); razorpay_order_id: str = Field(min_length=1, max_length=100); razorpay_signature: str = Field(min_length=1, max_length=300)
@@ -19,7 +20,7 @@ def propose_action(request: GrowthActionRequest):
         if request.product not in data["product_revenue"] or data["product_categories"].get(request.product) != request.category: raise HTTPException(422, "Product and category must match merchant data.")
         base = data["product_revenue"][request.product]; low, high = round(base * .03), round(base * .08)
         simulation = {"label": "Simulation / Estimate", "base_revenue": base, "impact_low": low, "impact_high": high, "formula": "3%–8% of the target product's current revenue; this is a transparent planning estimate, not a forecast."}
-        return create_growth_action(request.product, request.category, request.title, request.recommendation, request.evidence, simulation)
+        return create_growth_action(request.product, request.category, request.title, request.recommendation, request.evidence, simulation, request.campaign)
     except AnalyticsError as exc: raise HTTPException(503, str(exc)) from exc
 
 @router.post("/agent/approve")

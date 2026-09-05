@@ -21,3 +21,25 @@ def generate_growth_advice(data, question=""):
             "reason": "This recommendation uses current merchant revenue performance, not external assumptions.",
             "expected_goal": goal, "recommended_product": product, "recommended_category": category,
             "action": f"Create a campaign for {product}", "confidence": "High", "risk_level": "Low"}
+
+
+def generate_campaign(data, product):
+    """Create a bounded campaign brief from known merchant performance only."""
+    if product not in data["product_revenue"]:
+        raise ValueError("Target product is not present in merchant data.")
+    category = data["product_categories"][product]
+    revenue = data["product_revenue"][product]
+    return {
+        "campaign_name": f"{product} Momentum Sprint",
+        "objective": "Increase qualified product demand while measuring incremental revenue.",
+        "target_product": product,
+        "target_category": category,
+        "audience_idea": f"Shoppers browsing or purchasing in {category}; validate audience eligibility before sending any offer.",
+        "promotional_message": f"Discover {product} — a leading product in this merchant's current catalogue.",
+        "suggested_offer": "Test a limited-time value add or bundle; do not assume a discount is required.",
+        "suggested_duration": "7 days",
+        "expected_goal": "Learn whether focused visibility can lift product revenue.",
+        "risk_level": "Low",
+        "evidence": f"{product} currently contributes ₹{revenue:,.0f} in revenue, making it a data-supported campaign candidate.",
+        "guardrail": "Proposal only. It is not launched automatically and needs merchant approval."
+    }
