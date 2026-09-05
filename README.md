@@ -10,7 +10,6 @@ RazorGrow AI turns transaction data into an explainable, safe next action for me
 
 - Real-data analytics: revenue, transactions, units, AOV, product/category performance, and payment mix.
 - Explainable rule-based AI with evidence, goal, confidence, and risk level; no OpenAI credits are required.
-- AI campaign briefs with target product/category, audience idea, message, offer guardrails, duration, and an explicit merchant-approval requirement.
 - Best-seller, AOV, and low-performing-product opportunities.
 - Honest cross-sell intelligence: it only reports pairs supported by multi-product basket data.
 - Transparent **Simulation / Estimate** before approval: 3–8% of target-product revenue, never presented as a forecast.

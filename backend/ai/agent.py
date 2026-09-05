@@ -8,9 +8,9 @@ from backend.services.razorpay_service import RAZORPAY_KEY_ID, create_test_order
 def _now(): return datetime.now(timezone.utc).isoformat()
 
 
-def create_growth_action(product, category, title, recommendation, evidence, simulation, campaign=None):
+def create_growth_action(product, category, title, recommendation, evidence, simulation):
     action = {"action_id": f"action_{uuid4().hex[:12]}", "type": "campaign", "product": product, "category": category,
-              "title": title, "recommendation": recommendation, "evidence": evidence, "simulation": simulation, "campaign": campaign,
+              "title": title, "recommendation": recommendation, "evidence": evidence, "simulation": simulation,
               "status": "PENDING_APPROVAL", "created_at": _now(), "message": "Growth action is ready for merchant review."}
     save_action(action)
     return action

@@ -45,11 +45,6 @@ def get_merchant_analytics():
     total_revenue = _money(frame["revenue"].sum())
     total_transactions = int(frame["transaction_id"].nunique())
     product_categories = frame.groupby("product")["category"].agg(lambda values: values.mode().iat[0]).to_dict()
-    revenue_by_date = {}
-    if "date" in frame.columns:
-        parsed_dates = pd.to_datetime(frame["date"], errors="coerce")
-        dated = frame.assign(_date=parsed_dates).dropna(subset=["_date"])
-        revenue_by_date = {date.strftime("%Y-%m-%d"): _money(value) for date, value in dated.groupby("_date")["revenue"].sum().sort_index().items()}
     return {
         "total_transactions": total_transactions, "total_items_sold": int(frame["quantity"].sum()),
         "average_transaction_value": _money(total_revenue / total_transactions), "total_revenue": total_revenue,
@@ -59,7 +54,6 @@ def get_merchant_analytics():
         "product_units": {key: int(value) for key, value in product_units.items()},
         "payment_method_distribution": {key: int(value) for key, value in payment_methods.items()},
         "product_categories": product_categories,
-        "revenue_by_date": revenue_by_date,
         "data_quality": {"valid_rows": int(len(frame)), "has_transaction_baskets": bool((frame.groupby("transaction_id")["product"].nunique() > 1).any())},
     }
 
